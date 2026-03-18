@@ -1,0 +1,30 @@
+Metadata-Version: 2.4
+Name: dep-keystone
+Version: 0.1.0
+Summary: Deterministic dependency verification and SBOM attestation engine
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: click>=8.1.7
+Dynamic: license-file
+
+# DEP.KEYSTONE
+
+Deterministic dependency verification and SBOM attestation engine.
+
+## Initial Scope
+
+Supported inputs:
+- requirements.txt
+- package-lock.json
+- Cargo.lock
+
+Outputs:
+- normalized dependency graph
+- sbom.cdx.json
+- verification-report.json
+- evidence.sha256
+
+## Status
+
+Early build under Logos Governance Systems Inc.

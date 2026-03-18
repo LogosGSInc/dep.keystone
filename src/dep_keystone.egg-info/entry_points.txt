@@ -1,0 +1,2 @@
+[console_scripts]
+dep-keystone = dep_keystone.cli:main
