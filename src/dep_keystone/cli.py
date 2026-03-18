@@ -5,6 +5,7 @@ import click
 from dep_keystone.parsers.requirements_txt import parse_requirements_txt
 from dep_keystone.hashing import sha256_file_bytes
 from dep_keystone.report import build_verification_report
+from dep_keystone.sbom import build_sbom
 
 
 @click.group()
@@ -41,8 +42,11 @@ def verify(input_path: Path, input_type: str, out_dir: Path):
         input_sha256=sha256_file_bytes(raw_bytes),
     )
 
+    sbom = build_sbom(normalized_graph)
+
     (out_dir / "normalized-graph.json").write_text(json.dumps(normalized_graph, indent=2))
     (out_dir / "verification-report.json").write_text(json.dumps(report, indent=2))
+    (out_dir / "sbom.cdx.json").write_text(json.dumps(sbom, indent=2))
     (out_dir / "evidence.sha256").write_text(report["input_sha256"] + "\n")
 
     click.echo(f"Wrote artifacts to {out_dir}")
