@@ -3,6 +3,8 @@ import json
 import click
 
 from dep_keystone.parsers.requirements_txt import parse_requirements_txt
+from dep_keystone.hashing import sha256_file_bytes
+from dep_keystone.report import build_verification_report
 
 
 @click.group()
@@ -19,7 +21,8 @@ def verify(input_path: Path, input_type: str, out_dir: Path):
     """Run verification."""
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    content = input_path.read_text(encoding="utf-8")
+    raw_bytes = input_path.read_bytes()
+    content = raw_bytes.decode("utf-8")
 
     if input_type == "requirements.txt":
         packages = parse_requirements_txt(content)
@@ -32,7 +35,14 @@ def verify(input_path: Path, input_type: str, out_dir: Path):
         "packages": packages,
     }
 
-    output_file = out_dir / "normalized-graph.json"
-    output_file.write_text(json.dumps(normalized_graph, indent=2), encoding="utf-8")
+    report = build_verification_report(
+        input_type=input_type,
+        package_count=len(packages),
+        input_sha256=sha256_file_bytes(raw_bytes),
+    )
 
-    click.echo(f"Wrote {output_file}")
+    (out_dir / "normalized-graph.json").write_text(json.dumps(normalized_graph, indent=2))
+    (out_dir / "verification-report.json").write_text(json.dumps(report, indent=2))
+    (out_dir / "evidence.sha256").write_text(report["input_sha256"] + "\n")
+
+    click.echo(f"Wrote artifacts to {out_dir}")
