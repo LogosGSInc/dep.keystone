@@ -1,316 +1,173 @@
-# The Way - Torah Study App (Flutter)
+# DEP.KEYSTONE
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
-![Flutter](https://img.shields.io/badge/Flutter-3.27+-02569B.svg)
-![License](https://img.shields.io/badge/license-Open%20Source-green.svg)
+**Deterministic dependency verification and supply chain attestation for AI systems.**
 
-**The Way** is a comprehensive Torah study Progressive Web App designed to be 100% free and open-source. Built with Flutter for production-grade performance and scalability.
+DEP.KEYSTONE verifies software dependencies, assigns a severity-weighted Trust Score, and emits a three-file **Trust Certificate Bundle** for audit, procurement, and CI/CD enforcement.
 
----
+> **Trust Score:** A severity-weighted measure (0–100) of supply chain integrity and compliance risk.
 
-## 🎨 Design System
-
-### Visual Theme
-- **Primary Colors**: Sky Blue (#87CEEB), Pearl White (#F8F8FF), Gold (#FFD700)
-- **Typography**: Brush Script (headers), Lora Serif (body), Frank Ruehl (Hebrew)
-- **Borders**: Black 2px solid borders with gold accents
-- **Dark Mode**: OLED black background optimized for night study
-
-### Mood
-Peaceful, inspiring, and scholarly—designed for focused Torah study.
+Built by **[LOGOS Governance Systems Inc.](https://github.com/LogosGSInc)**
 
 ---
 
-## ✨ Features
+## Why it exists
 
-### Core Features (v1.0)
-- ✅ **Daily Torah Portion**: Automatic weekly updates with embedded Parasha schedule
-- ✅ **Prayer for Discernment**: Opening prayer before study (expandable card)
-- ✅ **Hebrew Text + Translation**: JPS 1917 English with Hebrew original
-- ✅ **Classical Commentaries**: Rashi, Ibn Ezra, Ramban, Sforno
-- ✅ **Personal Notes**: Auto-save with local storage
-- ✅ **Festival Calendar**: Complete Jewish holiday information
-- ✅ **Offline-First**: Zero internet required for core functionality
-- ✅ **Parasha Schedule**: Pre-loaded for 5786-5790 Jewish years
+AI systems inherit risk from their dependency graph long before model behavior is evaluated.
 
-### Enhanced Features (Roadmap)
-- 🚧 **Full Torah Browser**: Navigate any book/chapter/verse
-- 🚧 **Search Engine**: Keyword search across Torah and commentaries
-- 🚧 **Bookmarking System**: Save favorite verses
-- 🚧 **Highlighting System**: 5-color verse marking
-- 🚧 **Reading Plans**: Daily/weekly study tracks
-- 🚧 **Study Streaks**: Gamification with achievement badges
-- 🚧 **Share Verses**: Generate formatted images for social media
-- 🚧 **Audio Player**: Torah reading audio files
-- 🚧 **Multiple Translations**: Additional translations beyond JPS 1917
-- 🚧 **Notifications**: Daily study reminders
-- 🚧 **Multi-Language UI**: English, Hebrew, Pashto, Dari, Hindi, Mandarin, Spanish
+DEP.KEYSTONE gives teams a deterministic way to verify that supply-chain layer before deployment — emitting three machine-readable artifacts every time:
+
+- `verification-report.json`
+- `evidence.sha256`
+- `sbom.cdx.json`
+
+The result is a verifiable trust bundle that supports audit, procurement, and CI/CD decision-making.
 
 ---
 
-## 🏗️ Architecture
+## Demo
 
-**Pattern**: Clean Architecture + MVVM + Repository Pattern
+    dep-keystone verify requirements.txt --project-name my-ai-service
 
-```
-lib/
-├── core/                    # Shared infrastructure
-│   ├── constants/          # Colors, fonts, strings
-│   ├── theme/              # Light, dark, sepia themes
-│   ├── utils/              # Hebrew calendar, search engine
-│   └── widgets/            # Reusable UI components
-│
-├── features/               # Feature modules (16 total)
-│   ├── daily/             # Daily Torah portion
-│   ├── torah_browser/     # Full navigation system
-│   ├── commentaries/      # Commentary viewer
-│   ├── parasha/           # Weekly portion
-│   ├── festivals/         # Jewish holidays
-│   ├── notes/             # Personal study notes
-│   ├── bookmarks/         # Favorite verses
-│   ├── highlights/        # Color-coded marking
-│   ├── reading_plans/     # Study tracks
-│   ├── search/            # Search engine
-│   ├── share/             # Social media sharing
-│   ├── audio/             # Audio player
-│   ├── streaks/           # Gamification
-│   ├── notifications/     # Reminders
-│   ├── settings/          # App configuration
-│   └── prayer/            # Prayer texts
-│
-└── main.dart              # App entry point
-```
+**Risky graph — before pinning:**
 
-**State Management**: Riverpod 2.x  
-**Local Storage**: Hive (encrypted)  
-**Offline Data**: Embedded JSON assets
+    DEP.KEYSTONE  Trust Bundle
+    Project      my-ai-service
+    Dependencies 5
+    Trust Score  65/100
+    Status       FAILED
+    Findings     3
+      [MEDIUM  ] DEP-001 — boto3 has no pinned version
+      [HIGH    ] DEP-005 — boto3 is a direct dependency with no version pin
+      [LOW     ] DEP-002 — click@8.1.7 uses loose specifier '>='
+    Output       ./out/
+
+**Clean graph — after pinning:**
+
+    DEP.KEYSTONE  Trust Bundle
+    Project      my-ai-service
+    Dependencies 5
+    Trust Score  100/100
+    Status       VERIFIED
+    Output       ./out/
+
+Same project. Better dependency hygiene. Materially better deployability.
 
 ---
 
-## 🚀 Getting Started
+## Trust Certificate Bundle
 
-### Prerequisites
-- Flutter SDK 3.27+
-- Dart 3.2+
-- Android Studio / VS Code
-- Android SDK (for Android builds)
-- Xcode (for iOS builds, Mac only)
+Every `dep-keystone verify` run emits three artifacts:
 
-### Installation
-
-1. **Clone Repository**
-```bash
-git clone https://github.com/yourusername/the-way-torah-app.git
-cd the-way-torah-app/torah_study_pro
-```
-
-2. **Install Dependencies**
-```bash
-flutter pub get
-```
-
-3. **Generate Code** (Hive adapters, Riverpod providers)
-```bash
-flutter pub run build_runner build --delete-conflicting-outputs
-```
-
-4. **Run App**
-```bash
-# Development mode
-flutter run
-
-# Release mode (Android)
-flutter run --release
-
-# Specific device
-flutter run -d <device-id>
-```
+| Artifact | Format | Purpose |
+|---|---|---|
+| `verification-report.json` | JSON | Trust score, findings, severity, remediation, TrustCert envelope |
+| `evidence.sha256` | SHA-256 hex | Deterministic attestation anchor — same graph = same hash, always |
+| `sbom.cdx.json` | CycloneDX 1.5 | Machine-readable software bill of materials |
 
 ---
 
-## 📦 Building for Production
+## Trust Score
 
-### Android (APK)
-```bash
-flutter build apk --release --split-per-abi
-```
-Output: `build/app/outputs/flutter-apk/`
+| Severity | Weight |
+|---|---:|
+| critical | -40 |
+| high | -20 |
+| medium | -10 |
+| low | -5 |
+| info | 0 |
 
-### Android (App Bundle for Play Store)
-```bash
-flutter build appbundle --release \
-  --obfuscate \
-  --split-debug-info=build/app/outputs/symbols
-```
-Output: `build/app/outputs/bundle/release/app-release.aab`
-
-### iOS (App Store)
-```bash
-flutter build ipa --release
-```
-Output: `build/ios/archive/Runner.xcarchive`
-
-### Web (PWA)
-```bash
-flutter build web --release --web-renderer canvaskit
-```
-Output: `build/web/`
+Trust Score = 100 minus sum of weights, floored at 0. A fully pinned clean graph scores 100/100 VERIFIED.
 
 ---
 
-## 🧪 Testing
+## Signal Rules
 
-### Run All Tests
-```bash
-flutter test
-```
-
-### Test Coverage
-```bash
-flutter test --coverage
-genhtml coverage/lcov.info -o coverage/html
-open coverage/html/index.html
-```
-
-**Coverage Target**: >90%
+| Code | Severity | Signal |
+|---|---|---|
+| DEP-001 | medium | Unpinned version |
+| DEP-002 | low | Loose specifier |
+| DEP-003 | high | Duplicate package / version conflict |
+| DEP-004 | medium | Risky package-name pattern |
+| DEP-005 | high | Direct dependency with no version pin |
+| DEP-006 | critical | Known typosquat pattern detected |
 
 ---
 
-## 📁 Project Status
+## Install
 
-### ✅ Completed (Phase 1)
-- [x] Project structure
-- [x] Theme system (light/dark)
-- [x] Core constants (colors, fonts)
-- [x] Navigation architecture
-- [x] Daily screen with prayer card
-- [x] Torah portion display
-- [x] Commentary selector
-- [x] Personal notes with auto-save
-- [x] Festival calendar
-- [x] Settings screen
-- [x] Resource links
+Python 3.11+ required.
 
-### 🚧 In Progress (Phase 2)
-- [ ] Full Torah browser implementation
-- [ ] Hive database integration
-- [ ] Search engine
-- [ ] Bookmarking system
-- [ ] Parasha scheduler (5786+ years)
-
-### 📋 Pending (Phase 3+)
-- [ ] Reading plans
-- [ ] Study streaks
-- [ ] Audio player
-- [ ] Verse sharing (image generator)
-- [ ] Multi-translation viewer
-- [ ] Highlighting system
-- [ ] Notifications
-- [ ] Multi-language UI (7 languages)
+    git clone https://github.com/LogosGSInc/dep.keystone.git
+    cd dep.keystone
+    python -m venv .venv && source .venv/bin/activate
+    pip install -e .
+    pip install pytest && pytest tests/ -v
+    # 31 passed in 0.06s
 
 ---
 
-## 🎨 Design Specifications
+## Usage
 
-### Typography Scale
-- **Headlines**: 32sp (Brush Script Bold)
-- **Titles**: 24sp (Brush Script)
-- **Subtitles**: 20sp (Brush Script Medium)
-- **Body**: 16sp (Lora Serif)
-- **Hebrew**: 20sp (Frank Ruehl)
-- **Captions**: 14sp (Lora Serif)
-
-### Color Palette
-#### Light Mode
-- Primary: Sky Blue `#87CEEB`
-- Surface: Pearl White `#F8F8FF`
-- Accent: Gold `#FFD700`
-- Text: Black `#000000`
-
-#### Dark Mode (OLED)
-- Background: Pure Black `#000000`
-- Surface: Dark Gray `#121212`
-- Accent: Soft Gold `#DAA520`
-- Text: Pearl White `#F8F8FF`
+    dep-keystone verify requirements.txt --project-name my-project
+    dep-keystone verify requirements.txt --project-name my-project --output-dir reports/
+    ls out/
+    # evidence.sha256  sbom.cdx.json  verification-report.json
 
 ---
 
-## 🛠️ Development Tools
+## Standards Alignment
 
-### VS Code Extensions
-- Flutter
-- Dart
-- Flutter Riverpod Snippets
-- Error Lens
-
-### Android Studio Plugins
-- Flutter
-- Dart
-- Rainbow Brackets
+| Framework | Coverage |
+|---|---|
+| NTIA SBOM Minimum Elements | CycloneDX 1.5 machine-readable output |
+| EO 14028 | Software supply-chain security artifact expectations |
+| NIST AI RMF GOVERN 1.1 | Supply-chain risk identification and scoring |
+| SLSA Level 1 | evidence.sha256 deterministic hash attestation |
+| SOC 2 Type II | Dependency audit trail and structured verification report |
 
 ---
 
-## 📚 Resources & Credits
+## Architecture
 
-**Torah Texts:**
-- [Sefaria.org](https://www.sefaria.org) - Jewish texts library
-- JPS 1917 English Translation (Public Domain)
-- Leningrad Codex Hebrew Text
+    Input (lockfile)
+      Parser              parsers/requirements_txt.py
+      Dependency model    models.py — immutable, canonical, frozen
+      Hashing layer       hashing.py — order-independent SHA-256
+      Findings engine     report.py — 6 signal rules, severity-weighted
+      Output layer
+        verification-report.json
+        evidence.sha256
+        sbom.cdx.json  — CycloneDX 1.5
 
-**Commentaries:**
-- Rashi (Rabbi Shlomo Yitzchaki)
-- Ibn Ezra (Abraham ibn Ezra)
-- Ramban (Nachmanides)
-- Sforno (Obadiah Sforno)
-
-**Study Resources:**
-- [TorahClass.com](https://www.torahclass.com) - Video studies
-- [Chabad.org](https://www.chabad.org/parshah) - Weekly Parasha
-- [HebCal.com](https://www.hebcal.com) - Hebrew calendar
-
----
-
-## 🤝 Contributing
-
-This project is 100% free and open-source. Contributions welcome!
-
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open Pull Request
+Key properties:
+- Immutable frozen Dependency objects after parse
+- Order-independent manifest hashing — same graph, same hash, always
+- Project-scoped evidence hashing — no cross-project hash collisions
+- TrustCert embedded in every report
 
 ---
 
-## 📜 License
+## Roadmap
 
-**Open Source** - Free for personal and educational use.
-
-All Torah texts, translations, and commentaries are sourced from public domain materials or licensed for free use.
-
----
-
-## 📧 Contact
-
-**Developer**: DJ  
-**Project**: The Way Torah Study App  
-**Ecosystem**: Companion to Truth Daily (Flutter)
+- npm package-lock.json parser
+- Cargo.lock parser
+- OSV vulnerability database — live CVE signals per dependency
+- GitHub Actions CI enforcement — fail PRs below trust threshold
+- Sigstore/cosign signing of evidence.sha256 (SLSA Level 2+)
+- HAAP v2.0 Dynamic Risk Score integration
 
 ---
 
-## 🙏 Support
+## About
 
-If you find this app helpful:
-- ⭐ Star the repository
-- 📢 Share with your community
-- 🐛 Report bugs
-- 💡 Suggest features
-- 🤝 Contribute code
+DEP.KEYSTONE is the supply-chain trust layer of the LOGOS Governance Systems platform.
 
-**Support Partner Organizations:**
-- Donate to [Sefaria.org](https://www.sefaria.org/donate)
-- Support [TorahClass.com](https://www.torahclass.com)
+Its Trust Score feeds into the HAAP v2.0 Dynamic Risk Score (DRS). A trust_score below 70 triggers HAAP Layer 3 JIT Authorization before any AI system deployment is approved.
+
+LOGOS Governance Systems Inc. builds deterministic governance infrastructure for AI systems — verifiable, auditable, and defensible at enterprise scale.
 
 ---
 
-**Built with ❤️ for Torah study**
+## License
+
+Proprietary — Copyright 2026 LOGOS Governance Systems Inc. All rights reserved.
